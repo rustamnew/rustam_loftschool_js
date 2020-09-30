@@ -17,11 +17,11 @@
    isAllTrue([100, 2, 3, 4, 5], n => n < 10) // вернет false
  */
 function isAllTrue(array, fn) {
-  if (typeof fn != 'function') {
+  if (typeof fn !== 'function') {
     throw new Error('fn is not a function');
   }
 
-  if (!Array.isArray(array) || !array.length) {
+  if (!(array instanceof Array) || !array.length) {
     throw new Error('empty array');
   };
 
@@ -51,11 +51,11 @@ function isAllTrue(array, fn) {
    isSomeTrue([1, 2, 3, 4, 5], n => n > 20) // вернет false
  */
 function isSomeTrue(array, fn) {
-  if (typeof fn != 'function') {
+  if (typeof fn !== 'function') {
     throw new Error('fn is not a function');
   }
 
-  if (!Array.isArray(array) || !array.length) {
+  if (!(array instanceof Array) || !array.length) {
     throw new Error('empty array');
   }
 
@@ -80,7 +80,7 @@ function isSomeTrue(array, fn) {
    - fn не является функцией (с текстом "fn is not a function")
  */
 function returnBadArguments(fn, ...args) {
-  if (typeof fn != 'function') {
+  if (typeof fn !== 'function') {
     throw new Error('fn is not a function');
   }
 
@@ -123,11 +123,10 @@ function calculator(number = 0) {
 
   return {
     sum(...args) {
-      let result = number;
 
-      for (let item of args) {
-        result += item
-      }
+      let result = args.reduce((sum, current) => {
+        return sum + current
+      })
 
       return result
     },
