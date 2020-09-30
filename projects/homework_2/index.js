@@ -47,8 +47,9 @@ function map(array, fn) {
 function reduce(array, fn, initial) {
   let hasInitial = typeof initial !== 'undefined';
   let prev = hasInitial ? initial : array[0];
+  let from = hasInitial ? 0 : 1;
 
-  for (let i = hasInitial ? 0 : 1; i < array.length; i++) {
+  for (let i = from; i < array.length; i++) {
     prev = fn(prev, array[i], i, array);
   }
 
