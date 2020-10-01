@@ -123,44 +123,37 @@ function calculator(number = 0) {
 
   return {
     sum(...args) {
-
       let result = args.reduce((sum, current) => {
         return sum + current
-      })
+      }, number);
 
       return result
     },
 
     dif(...args) {
-      let result = number;
-
-      for (let item of args) {
-        result -= item
-      }
+      let result = args.reduce((dif, current) => {
+        return dif - current
+      }, number);
 
       return result
     },
 
     div(...args) {
-      let result = number;
-
-      for (let item of args) {
-        if (item === 0) {
+      let result = args.reduce((div, current) => {
+        if (current === 0) {
           throw new Error('division by 0')
         };
 
-        result /= item
-      }
+        return div/current
+      }, number);
 
       return result
     },
 
     mul(...args) {
-      let result = number;
-
-      for (let item of args) {
-        result *= item
-      }
+      let result = args.reduce((mul, current) => {
+        return mul * current
+      }, number);
 
       return result
     }
