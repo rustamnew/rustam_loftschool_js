@@ -222,13 +222,13 @@ function collectDOMStat(root) {
    }
  */
 function observeChildNodes(where, fn) {
-  let observer = new MutationObserver((mutations) => {
+  const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.type === 'childList') {
         fn({
-          type: mutation.addedNotes.length ? 'insert' : 'remove',
+          type: mutation.addedNodes.length ? 'insert' : 'remove',
           nodes: [
-            ...(mutation.addedNotes.length ? mutation.addedNotes : mutation.removedNotes),
+            ...(mutation.addedNodes.length ? mutation.addedNodes : mutation.removedNodes),
           ],
         });
       }
