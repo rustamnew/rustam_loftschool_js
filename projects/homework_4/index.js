@@ -223,16 +223,16 @@ function collectDOMStat(root) {
  */
 function observeChildNodes(where, fn) {
   let observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutations) => {
+    mutations.forEach((mutation) => {
       if (mutation.type === 'childList') {
         fn({
           type: mutation.addedNotes.length ? 'insert' : 'remove',
           nodes: [
             ...(mutation.addedNotes.length ? mutation.addedNotes : mutation.removedNotes),
-          ]
-        })
+          ],
+        });
       }
-    })
+    });
   });
 
   observer.observe(where, {childList: true, subtree: true});
