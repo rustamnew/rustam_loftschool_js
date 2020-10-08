@@ -54,7 +54,7 @@ function findAllPSiblings(where) {
   let nodes = where.children
 
   for (let i of nodes) {
-    if (i.nextElementSibling && i.nextElementSibling.tagName == 'P') {
+    if (i?.nextElementSibling?.tagName == 'P') {
       array.push(i)
     }
   }
@@ -124,10 +124,10 @@ function deleteTextNodesRecursive(where) {
   let nodes = where.childNodes
 
   for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].nodeType == 3) {
+    if (nodes[i].nodeType === 3) {
       nodes[i].remove()
       i--
-    } else if (nodes[i].nodeType == 1) {
+    } else if (nodes[i].nodeType === 1) {
       deleteTextNodesRecursive(nodes[i])
     }
   }
