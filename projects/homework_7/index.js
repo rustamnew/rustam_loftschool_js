@@ -33,7 +33,7 @@ import './cookie.html';
    const newDiv = document.createElement('div');
    homeworkContainer.appendChild(newDiv);
  */
-const homeworkContainer = document.querySelector('#homework-container');
+const homeworkContainer = document.querySelector('#app');
 // текстовое поле для фильтрации cookie
 const filterNameInput = homeworkContainer.querySelector('#filter-name-input');
 // текстовое поле с именем cookie
@@ -45,11 +45,88 @@ const addButton = homeworkContainer.querySelector('#add-button');
 // таблица со списком cookie
 const listTable = homeworkContainer.querySelector('#list-table tbody');
 
+var filterValue = ''
+
+
 filterNameInput.addEventListener('input', function () {
+  filterValue = filterNameInput.value
+  updateTable()
 });
 
+
+let cookies = document.cookie.replace(/"/g,'')
+
+let cookiesObj = cookies.split('; ').reduce((prev, current) => {
+    let [name, value] = current.split('=');
+    prev[name] = value;
+    return prev;
+ }, {});
+
+
 addButton.addEventListener('click', () => {
+  const cookieName = addNameInput.value
+  const cookieValue = addValueInput.value
+
+  if(cookieName && cookieValue) {
+    document.cookie = `"${cookieName}=${cookieValue}"`
+    cookiesObj[cookieName] = cookieValue
+  }
+
+  updateTable()
 });
 
 listTable.addEventListener('click', (e) => {
+  let {role, cookieName} = e.target.dataset
+
+  if (role === 'remove-cookie') {
+    delete cookiesObj[cookieName]
+    document.cookie = `"${cookieName}=deleted; max-age=0"`;
+    updateTable()
+  }
+  
 });
+
+function updateTable() {
+  console.log('update table')
+  listTable.innerHTML = ''
+
+  for (let name in cookiesObj) {
+    if (
+      filterValue && 
+      !name.toLowerCase().includes(filterValue.toLowerCase()) && 
+      !cookiesObj[name].toLowerCase().includes(filterValue.toLowerCase())) {
+        continue
+    }
+
+    const tr = document.createElement('tr')
+    const tdName = document.createElement('td')
+    const tdValue = document.createElement('td')
+    const tdRemove = document.createElement('td')
+    const removeButton = document.createElement('button')
+
+    removeButton.textContent = 'Удалить' 
+    removeButton.dataset.role = 'remove-cookie'
+    removeButton.dataset.cookieName = name
+
+    tdName.innerText = name
+    tdValue.innerText = cookiesObj[name]
+    tdRemove.append(removeButton)
+
+    tr.append(tdName, tdValue, tdRemove)
+
+    if(name && cookiesObj[name]) {
+      listTable.append(tr)
+      console.log('appended')
+    }
+
+  }
+}
+
+updateTable()
+
+
+
+
+
+
+
