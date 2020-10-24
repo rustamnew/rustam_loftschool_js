@@ -3,17 +3,38 @@ ymaps.ready(init);
 let objectManager
 
 let testArr = []
+let testObj = {}
+
+let storage = localStorage
+console.log(storage)
+
+//localStorage.clear()
+
+for (key in storage) {
+    if (typeof storage[key] == 'string') {
+        console.log(storage[key])
+        let test = JSON.parse(storage[key])
+        console.log(test)
+        testArr.push(test)
+    }
+}
+
+console.log(testArr)
+
+
+
+
 
 var modal = document.querySelector('#modal')
-
 var closeModal = document.querySelector('.modal__close')
-
 var submit = document.querySelector('#submit')
 
 closeModal.addEventListener('click', (e) => {
     e.currentTarget.closest('.modal').style.top = 0
     e.currentTarget.closest('.modal').style.left = -500+'px'
 })
+
+let i = storage.length
 
 submit.addEventListener('click', (e) => {
     e.preventDefault()
@@ -29,12 +50,44 @@ submit.addEventListener('click', (e) => {
     console.log(review)
     console.log(coords)
 
-    createPlacemark(coords)
 
+    i = i + 1
+
+    let placemark = 'placemark'+ i
+
+    console.log(placemark)
+    console.log(i)
+
+    storage[placemark] = JSON.stringify({
+        name: name,
+        place: place,
+        review: review,
+        coords: coords
+    })
+
+    testArr.push({
+        name: name,
+        place: place,
+        review: review,
+        coords: coords
+    })
+   
+    
+
+    console.log(storage)
+
+    console.log(testArr)
+
+    modal.style.top = 0
+    modal.style.left = -500+'px'
+
+
+    
 })
 
 
-function init(){
+function init() {
+
     // Создание карты.
     var myMap = new ymaps.Map("map", {
         // Координаты центра карты.
@@ -48,75 +101,98 @@ function init(){
         controls: []
     });
 
-    myPlacemark = new ymaps.Placemark(
-        myMap.getCenter(),
-        {
-            hintContent: 'Собственный значок метки',
-            balloonContent: 'Это красивая метка'
-        }
-    )
-    myPlacemark1 = new ymaps.Placemark(
-        [55.758216, 37.589608],
-        {
-            hintContent: 'Собственный значок метки',
-            balloonContent: 'Это красивая метка'
-        }
-    )
-    myPlacemark2 = new ymaps.Placemark(
-        [55.74284664298958, 37.62422552813733],
-        {
-            hintContent: 'Собственный значок метки',
-            balloonContent: 'Это красивая метка'
-        }
-    )
     myMap.controls.add('zoomControl');
     myMap.behaviors.disable(['dblClickZoom'])
 
-    myMap.geoObjects.add(myPlacemark)
-    myMap.geoObjects.add(myPlacemark1)
-    myMap.geoObjects.add(myPlacemark2)
 
     addListeners(myMap)
 
-    myMap.geoObjects
-        
-        .add(new ymaps.Placemark([55.790139, 37.814052]));
 
     testArr.forEach((e) => {
-        myMap.geoObjects.add(e)
+        
+        myMap.geoObjects.add(new ymaps.Placemark(e.coords, {
+            balloonContentHeader: `<small>${e.name} </small><i>${e.place}</i>
+                                    <p>${e.review}</p>`,
+            balloonContentBody: `
+                            <form class="form" id="formBaloon" data-coords=${e.coords}>
+                                 <input name="name" type="text" placeholder="Имя" class="input text">
+                                 <input name="place" type="text" placeholder="Место" class="input text">
+                                 <textarea name="review" placeholder="Отзыв" class="input text textarea"></textarea>
+                                 <input type="button" value="Добавить" data-role="modalSubmit">
+                            </form>
+                                 `,
+            balloonContentFooter: `${e.coords}`,
+        }))
+
+        //console.log(e)
+
     })
 
+    
+
 }
+
+document.addEventListener('click', (e) => {
+    if (e.target.dataset.role == 'modalSubmit') {
+
+        let form = document.querySelector('#formBaloon')
+        let name = form.elements.name.value
+        let place = form.elements.place.value
+        let review = form.elements.review.value
+
+        
+        let coordsString = `${form.dataset.coords}`
+        let coordsSplit = coordsString.split(',')
+        coordsSplitNumber = []
+        coordsSplit.forEach((e) => {
+            coordsSplitNumber.push(Number(e))
+        })
+        coords = coordsSplitNumber
+        console.log(coords)
+
+
+
+        i = i + 1
+
+        let placemark = 'placemark'+ i
+
+        console.log(placemark)
+        console.log(i)
+
+        storage[placemark] = JSON.stringify({
+            name: name,
+            place: place,
+            review: review,
+            coords: coords
+        })
+
+        testArr.push({
+            name: name,
+            place: place,
+            review: review,
+            coords: coords
+        })
+    
+    }
+})
+
+
+
+
 
 
 function addListeners(myMap) {
-    myMap.events.add('click', (e) => openModal(e));
-}
-
-function createPlacemark(coords) {
-    const placemark = new ymaps.Placemark(coords)
-    console.log(placemark)
-
-    placemark.events.add('click', (e) => {
-        console.log('click')
-    }) 
-    
-    testArr.push(placemark)
-    console.log(testArr)
+    myMap.events.add('click', (e) => openEmptyModal(e));
 }
 
 
-function openModal(e) {
-    openEmptyModal(e)
+async function openEmptyModal(e) {
 
-    //очистка полей
     let inputs = document.querySelectorAll('.input.text')
     inputs.forEach((e) => {
         e.value = ''
     })
-}
 
-async function openEmptyModal(e) {
     let posX = e.getSourceEvent().originalEvent.domEvent.originalEvent.clientX;
 
     let posY = e.getSourceEvent().originalEvent.domEvent.originalEvent.clientY;
@@ -133,8 +209,6 @@ async function openEmptyModal(e) {
     modal.style.top = posY+'px'
 
 }
-
-
 
 function getClickCoords(coords) {
     return new Promise((resolve, reject) => {
