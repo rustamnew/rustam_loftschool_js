@@ -7,6 +7,9 @@ let ObjAddress
 let storage = localStorage
 console.log(storage)
 
+let geoObjectsVar
+let clustererVar
+
 //localStorage.clear()
 
 for (key in storage) {
@@ -76,7 +79,7 @@ submit.addEventListener('click', (e) => {
     modal.style.top = 0
     modal.style.left = -500+'px'
 
-    init()
+    createPlacemarks()
 })
 
 let geoObjects = []
@@ -95,6 +98,8 @@ function init() {
         controls: []
     });
 
+    geoObjectsVar = myMap.geoObjects
+
     myMap.controls.add('zoomControl');
     myMap.behaviors.disable(['dblClickZoom'])
 
@@ -106,8 +111,8 @@ function init() {
     placemarkArray.forEach((e) => {
 
         geoObjects[i] = new ymaps.Placemark(e.coords, {
-            balloonContentHeader: getReviews(e.coords),
-            balloonContentBody: `
+            //balloonContentHeader: getReviews(e.coords),
+            balloonContentBody: ` ${getReviews(e.coords)}
                             <form class="form" id="formBaloon" data-coords=${e.coords}>
                                  <input name="name" type="text" placeholder="Имя" class="input text">
                                  <input name="place" type="text" placeholder="Место" class="input text">
@@ -116,6 +121,8 @@ function init() {
                             </form>
                                  `,
             balloonContentFooter: `${e.address}<p>${e.coords}</p>`,
+            clusterCaption: `метка ${i}`
+            
             
         })
 
@@ -124,16 +131,17 @@ function init() {
         })
         
         myMap.geoObjects.add(geoObjects[i])
+        
 
         i++
     })
 
     let clusterer = new ymaps.Clusterer({
         groupByCoordinates: false,
-        //clusterBalloonContentLayout: кастомный html для кластеризатора
+        //clusterBalloonContentLayout:
     })
 
-    
+    clustererVar = clusterer
     
     clusterer.add(geoObjects)
 
@@ -141,6 +149,8 @@ function init() {
         gridSize: 80,
         clusterDisableClickZoom: true
     });
+
+    
 
     myMap.geoObjects.add(clusterer)
 }
@@ -194,10 +204,52 @@ document.addEventListener('click', (e) => {
         form.elements.place.value = ''
         form.elements.review.value = ''
     
+        createPlacemarks()
     }
 })
 
 
+function createPlacemarks() {
+    clustererVar.removeAll()
+    
+    let i = 0
+
+    placemarkArray.forEach((e) => {
+        
+
+        geoObjects[i] = new ymaps.Placemark(e.coords, {
+            //balloonContentHeader: getReviews(e.coords),
+            balloonContentBody: ` ${getReviews(e.coords)}
+                            <form class="form" id="formBaloon" data-coords=${e.coords}>
+                                 <input name="name" type="text" placeholder="Имя" class="input text">
+                                 <input name="place" type="text" placeholder="Место" class="input text">
+                                 <textarea name="review" placeholder="Отзыв" class="input text textarea"></textarea>
+                                 <input type="button" value="Добавить" data-role="modalSubmit">
+                            </form>
+                                 `,
+            balloonContentFooter: `${e.address}<p>${e.coords}</p>`,
+            clusterCaption: `метка ${i}`
+            
+            
+        })
+
+        geoObjects[i].events.add('click', () => {
+            console.log(e.coords)
+        })
+        
+        geoObjectsVar.add(geoObjects[i])
+        clustererVar.add(geoObjects[i])
+
+        i++
+    })
+
+    //clustererVar = clusterer
+    
+    clustererVar.add(geoObjects)
+
+
+    geoObjectsVar.add(clustererVar)
+}
 
 
 function addListeners(myMap) {
@@ -231,7 +283,27 @@ async function openEmptyModal(e) {
     
 }
 
+function getAddressAndCoords(coords) {
+    let equal = false
+    let addressAndCoords
+        
+    placemarkArray.forEach((e) => {
+        let equal = false
+        
+        for (i = 0; i < e.coords.length; i++) {
+            if (e.coords[i] == coords[i]) {
+                equal = true
+            } else {equal = false}
+        }
 
+        if (equal) {
+            addressAndCoords = `${e.address}<p>${e.coords}</p>`
+        }
+        
+    })
+
+    return addressAndCoords
+}
 
 function getClickCoords(coords) {
     return new Promise((resolve, reject) => {
@@ -244,6 +316,7 @@ function getClickCoords(coords) {
 
 function getReviews(coords) {
     let baloonHeaderHTML = ''
+
     placemarkArray.forEach((e) => {
         let equal = false
         
@@ -256,7 +329,6 @@ function getReviews(coords) {
         if (equal) {
             baloonHeaderHTML += `<p><small>${e.name} </small><i>${e.place}</i></p><p>${e.review}</p>`
         }
-        
     })
 
     return baloonHeaderHTML
@@ -285,53 +357,33 @@ function getAddress(coords) {
 }
 
 
+/*
+function createPlacemarks() {
+    let i = geoObjects.length
+    console.log(i)
 
+    
 
-
-
-
-
-
-
-/*placemarkArray.forEach((e) => {
-
-        let placemark = new ymaps.Placemark(e.coords, {
-            balloonContentHeader: getReviews(e.coords),
-            balloonContentBody: `
-                            <form class="form" id="formBaloon" data-coords=${e.coords}>
+        geoObjects[i] = new ymaps.Placemark(placemarkArray[i].coords, {
+            balloonContentHeader: getReviews(placemarkArray[i].coords),
+            balloonContentBody: ` 
+                            <form class="form" id="formBaloon" data-coords=${placemarkArray[i].coords}>
                                  <input name="name" type="text" placeholder="Имя" class="input text">
                                  <input name="place" type="text" placeholder="Место" class="input text">
                                  <textarea name="review" placeholder="Отзыв" class="input text textarea"></textarea>
                                  <input type="button" value="Добавить" data-role="modalSubmit">
                             </form>
                                  `,
-            balloonContentFooter: `${e.address}<p>${e.coords}</p>`,
-        })
-
-        placemark.events.add('click', () => {
-            console.log(e.coords)
-        })
-        
-        myMap.geoObjects.add(placemark)
-    })*/
-
-    /*for (i = 0; i < placemarkArray.length; i++) {
-        geoObjects[i] = new ymaps.Placemark(placemarkArray[i].coords, {
-            balloonContentHeader: getReviews(placemarkArray[i].coords),
-            balloonContentBody: `
-                            <form class="form" id="formBaloon" data-coords=${placemarkArray[i].coords}>
-                                <input name="name" type="text" placeholder="Имя" class="input text">
-                                <input name="place" type="text" placeholder="Место" class="input text">
-                                <textarea name="review" placeholder="Отзыв" class="input text textarea"></textarea>
-                                <input type="button" value="Добавить" data-role="modalSubmit">
-                            </form>
-                                `,
-            balloonContentFooter: `${placemarkArray[i].address}<p>${placemarkArray[i].coords}</p>`,
+            balloonContentFooter: `${getAddressAndCoords(placemarkArray[i].coords)}`,
+            clusterCaption: `метка ${i}`
+            
         })
 
         geoObjects[i].events.add('click', () => {
             console.log(placemarkArray[i].coords)
         })
-
-        myMap.geoObjects.add(geoObjects[i])
-    }*/
+        
+        geoObjectsVar.add(geoObjects[i])
+        clustererVar.add(geoObjects[i])
+    
+}*/
